@@ -1,5 +1,5 @@
 """
-WindowWatch  -  W.01.00
+WindowWatch  -  W.01.01
 A Windows tray/panel utility that flags activity in background windows.
 
 Two detection methods run together:
@@ -250,6 +250,28 @@ class Monitor:
                     self.watched.pop(h, None)
             time.sleep(3)
 
+    # ---- live title refresh + title-change-as-activity ----
+    def title_loop(self):
+        """
+        Poll each watched window's current title. Update the stored title so
+        the panel shows the live value, and treat a title change on a HIDDEN
+        window as activity. Many chat sites bump the title (e.g. add "(1)")
+        when a reply arrives, so this catches hidden Edge tabs even when pixel
+        capture returns a blank frame.
+        """
+        while self.running:
+            with self.lock:
+                targets = [w for w in self.watched.values() if w.alive()]
+            for w in targets:
+                current = window_title(w.hwnd)
+                if current and current != w.title:
+                    changed_while_hidden = is_window_hidden(w.hwnd)
+                    with self.lock:
+                        w.title = current
+                    if changed_while_hidden:
+                        self.fire_activity(w.hwnd)
+            time.sleep(1.0)
+
 
 # ----------------------------------------------------------------------------
 # Shell hook listener for taskbar-flash (HSHELL_FLASH) events
@@ -462,6 +484,7 @@ def main():
 
     threading.Thread(target=monitor.pixel_loop, daemon=True).start()
     threading.Thread(target=monitor.prune_loop, daemon=True).start()
+    threading.Thread(target=monitor.title_loop, daemon=True).start()
 
     panel = Panel(monitor)
     panel.run()

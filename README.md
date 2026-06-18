@@ -1,4 +1,4 @@
-# WindowWatch  (W.01.00)
+# WindowWatch  (W.01.01)
 
 A small Windows tray-panel utility that flags activity in **background / hidden**
 windows and plays an audio cue — so you stop missing the chat reply or message
@@ -67,4 +67,8 @@ Open `windowwatch.py` and adjust the constants near the top:
 
 ## Version
 
-W.01.00 — initial build. Versioning: `W.MAJOR.MINOR`.
+W.01.01 — live title refresh; a title change on a hidden window now also counts
+as activity (catches chat tabs that bump the title, e.g. "(1)", even when pixel
+capture returns blank). Versioning: `W.MAJOR.MINOR`.
+
+W.01.00 — initial build.
